@@ -1,16 +1,17 @@
 // src/views/RecipeForm.js
 import TokenContext from "../contexts/TokenContext";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 
-function RecipeForm({ mode }) {
+function RecipeForm({ mode, id }) {
 	var token = useContext(TokenContext)[0];
-	var { handleSubmit, register, formState: { errors } } = useForm();
+	var { setValue, handleSubmit, register, formState: { errors } } = useForm();
+	var [content, setContent] = useState({});
 
 	function saveRecipe(data) {
 		console.log(data);
-		axios.post("http://localhost:1337/recipes", {
+		mode === "create" && axios.post("http://localhost:1337/recipes", {
 			title: data.title,
 			description: data.description,
 			procedure: data.procedure,
@@ -23,16 +24,51 @@ function RecipeForm({ mode }) {
 			headers: {
 				"Authorization": `Bearer ${token.jwt}`
 			}
+		});
+
+		mode === "edit" && axios.put("http://localhost:1337/recipes/" + id, {
+			title: data.title,
+			description: data.description,
+			procedure: data.procedure,
+			kcal: data.kcal,
+			protein: data.protein,
+			fat: data.fat,
+			carbs: data.carbs,
+			author: token.user.id,
+			ingredients: data.ingredients
+		}, {
+			headers: {
+				"Authorization": `Bearer ${token.jwt}`
+			}
 		})
+			.then(response => console.log(response));
 	}
+
+	useEffect(function() {
+		axios.get("http://localhost:1337/recipes/" + id)
+			.then(response => setContent(response.data));
+	}, [setContent]);
+
+	useEffect(function() {
+		if (content) {
+			setValue("title", content.title);
+			setValue("description", content.description);
+			setValue("procedure", content.procedure);
+			setValue("kcal", content.kcal);
+			setValue("fat", content.fat);
+			setValue("protein", content.protein);
+			setValue("carbs", content.carbs);
+			content.ingredients?.map((ingredient, i) =>
+				setValue(`ingredients[${i}]`, ingredient));
+		}
+	}, [content]);
 
 	return (
 		<form onSubmit={handleSubmit(saveRecipe)}>
-			<button type="submit">Save</button>
 
 			<div className="inputGroup">
 				<label htmlFor="title">Title</label>
-				<input type="text" { ...register("title") } id="title"/>
+				<input type="text" { ...register("title") } id="title" />
 			</div>
 			<div className="inputGroup">
 				<label htmlFor="description">Description</label>
@@ -47,16 +83,23 @@ function RecipeForm({ mode }) {
 				<fieldset>
 					<legend>Nutritional facts</legend>
 					<label htmlFor="kcal">KCAL</label>
-					<input type="number" { ...register("kcal") } id="kcal"/>
+					<input type="number" step="0.1" { ...register("kcal") } id="kcal"/>
 
 					<label htmlFor="fat">Fat</label>
-					<input type="number" { ...register("fat") } id="fat"/>
+					<input type="number" step="0.1" { ...register("fat") } id="fat"/>
 
 					<label htmlFor="protein">Protein</label>
-					<input type="number" { ...register("protein") } id="protein"/>
+					<input type="number" step="0.1" { ...register("protein") } id="protein"/>
 
 					<label htmlFor="carbs">Carbs</label>
-					<input type="number" { ...register("carbs") } id="carbs"/>
+					<input type="number" step="0.1" { ...register("carbs") } id="carbs"/>
+				</fieldset>
+			</div>
+
+			<div className="inputGroup">
+				<fieldset>
+					<legend>Ingredients</legend>
+					{content.ingredients?.map((ingredient, i) => <input type="text" { ...register(`ingredients[${i}]`) } />)}
 				</fieldset>
 			</div>
 

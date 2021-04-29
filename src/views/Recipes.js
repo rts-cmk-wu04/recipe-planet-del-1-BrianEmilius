@@ -29,8 +29,8 @@ function Recipes() {
 				<tbody>
 					{content.map(item => {
 						return (
-							<tr>
-								<td>Del Edit</td>
+							<tr key={item.id}>
+								<td>Del <Link to={"/admin/edit-recipe/" + item.id}>Edit</Link></td>
 								<td>{ item.title }</td>
 							</tr>
 						);

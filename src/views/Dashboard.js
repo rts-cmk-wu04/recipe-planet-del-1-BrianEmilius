@@ -24,6 +24,7 @@ function Dashboard() {
 			<Router>
 				<Recipes path="/admin/recipes" />
 				<RecipeForm path="/admin/create-recipe" mode="create" />
+				<RecipeForm path="/admin/edit-recipe/:id" mode="edit" />
 			</Router>
 		</>
 	);
