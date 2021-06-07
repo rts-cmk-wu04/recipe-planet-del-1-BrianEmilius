@@ -11,6 +11,19 @@ function RecipeForm({ mode, id }) {
 
 	function saveRecipe(data) {
 		console.log(data);
+		let fields = new FormData();
+		fields.append("files", data.files);
+		fields.append("refId", token.user.id);
+		fields.append("ref", "user");
+		fields.append("source", "users-permissions");
+
+		axios.post("http://localhost:1337/upload", fields, {
+			headers: {
+				"Authorization": `Bearer ${token.jwt}`
+			}
+		})
+			.then(res => console.log(res));
+
 		mode === "create" && axios.post("http://localhost:1337/recipes", {
 			title: data.title,
 			description: data.description,
@@ -101,6 +114,10 @@ function RecipeForm({ mode, id }) {
 					<legend>Ingredients</legend>
 					{content.ingredients?.map((ingredient, i) => <input type="text" { ...register(`ingredients[${i}]`) } />)}
 				</fieldset>
+			</div>
+
+			<div className="inputGroup">
+				<input type="file" name="files" id="files" multiple/>
 			</div>
 
 			<button type="submit">Save</button>
