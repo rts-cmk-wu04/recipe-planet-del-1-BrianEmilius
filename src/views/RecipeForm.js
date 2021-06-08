@@ -6,8 +6,10 @@ import axios from "axios";
 
 function RecipeForm({ mode, id }) {
 	var token = useContext(TokenContext)[0];
-	var { setValue, handleSubmit, register, formState: { errors } } = useForm();
+	var { setValue, handleSubmit, register, unregister, formState: { errors } } = useForm();
 	var [content, setContent] = useState({});
+
+	var [list, setList] = useState(0);
 
 	function saveRecipe(data) {
 		console.log(data);
@@ -64,6 +66,7 @@ function RecipeForm({ mode, id }) {
 
 	useEffect(function() {
 		if (content) {
+			setList(content.ingredients?.length || 0);
 			setValue("title", content.title);
 			setValue("description", content.description);
 			setValue("procedure", content.procedure);
@@ -112,7 +115,9 @@ function RecipeForm({ mode, id }) {
 			<div className="inputGroup">
 				<fieldset>
 					<legend>Ingredients</legend>
-					{content.ingredients?.map((ingredient, i) => <input type="text" { ...register(`ingredients[${i}]`) } />)}
+					<button type="button" onClick={() => setList(list + 1)}>+</button>
+					<button type="button" onClick={() => { unregister(`ingredients[${list - 1}]`); setList(list - 1) }}>-</button>
+					{[...Array(list)].map((ingredient, i) => <input type="text" { ...register(`ingredients[${i}]`) } />)}
 				</fieldset>
 			</div>
 
