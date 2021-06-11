@@ -11,7 +11,24 @@ function RecipeForm({ mode, id }) {
 
 	var [list, setList] = useState(0);
 
+	function uploadFiles(event) {
+		event.preventDefault();
+
+		for(let i = 0; i < event.target.files.files.length; i++) {
+			if (!event.target.files.files[i].type.startsWith("image/")) {
+				alert("FY!!");
+				return;
+			}
+		}
+
+		axios.post("http://localhost:1337/upload", new FormData(event.target), { headers: {
+			"Authorization": `Bearer ${token.jwt}`
+		} })
+			.then(res => console.log(res));
+	}
+
 	function saveRecipe(data) {
+		console.log(data);
 		mode === "create" && axios.post("http://localhost:1337/recipes", {
 			title: data.title,
 			description: data.description,
@@ -66,6 +83,7 @@ function RecipeForm({ mode, id }) {
 	}, [content]);
 
 	return (
+		<>
 		<form onSubmit={handleSubmit(saveRecipe)}>
 
 			<div className="inputGroup">
@@ -106,14 +124,19 @@ function RecipeForm({ mode, id }) {
 					{[...Array(list)].map((ingredient, i) => <input type="text" { ...register(`ingredients[${i}]`) } />)}
 				</fieldset>
 			</div>
-
-			<div className="inputGroup">
-				<input type="file" name="files" id="files" multiple/>
-			</div>
-
 			<button type="submit">Save</button>
 		</form>
-	)
+		<form onSubmit={uploadFiles}>
+			<input type="hidden" name="ref" value="recipes" />
+			<input type="hidden" name="refId" value={id} />
+			<input type="hidden" name="field" value="images" />
+			<div className="inputGroup">
+				<input type="file" accept="image/*" name="files" id="files" multiple/>
+			</div>
+			<button type="submit">Upload image(s)</button>
+		</form>
+		</>
+	);
 }
 
 export default RecipeForm;
